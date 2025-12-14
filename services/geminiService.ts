@@ -1,8 +1,6 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { ReceiptData } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 const receiptSchema: Schema = {
   type: Type.OBJECT,
   properties: {
@@ -65,6 +63,13 @@ const receiptSchema: Schema = {
 };
 
 export const extractReceiptData = async (base64Image: string, mimeType: string): Promise<ReceiptData> => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) {
+    throw new Error("API Key is missing. Please check your environment configuration.");
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
+
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
