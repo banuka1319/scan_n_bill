@@ -1,0 +1,7 @@
+{
+  "name": "BillScanner AI",
+  "description": "Scan bills and receipts to instantly extract data into structured spreadsheets using Gemini AI.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
