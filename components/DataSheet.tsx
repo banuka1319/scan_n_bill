@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ReceiptData } from '../types';
-import { Download, Save, DollarSign, Calendar, ShoppingBag } from 'lucide-react';
+import { Download, Copy, Check, Calendar, ShoppingBag, DollarSign } from 'lucide-react';
 
 interface DataSheetProps {
   data: ReceiptData;
 }
 
 const DataSheet: React.FC<DataSheetProps> = ({ data }) => {
+  const [copied, setCopied] = useState(false);
+
   const downloadCSV = () => {
     const headers = ["Description", "Category", "Quantity", "Unit Price", "Total Price"];
     const rows = data.items.map(item => [
@@ -36,6 +38,35 @@ const DataSheet: React.FC<DataSheetProps> = ({ data }) => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const copyToClipboard = async () => {
+    const headers = ["Description", "Category", "Quantity", "Unit Price", "Total Price"];
+    const rows = data.items.map(item => [
+      item.description,
+      item.category || '',
+      item.quantity.toString(),
+      item.unitPrice.toString(),
+      item.totalPrice.toString()
+    ]);
+
+    // Create tab-separated string for spreadsheet pasting
+    const tsvContent = [
+      headers.join("\t"),
+      ...rows.map(r => r.join("\t")),
+      "",
+      ["Subtotal", "", "", "", (data.totalAmount - data.taxAmount).toFixed(2)].join("\t"),
+      ["Tax", "", "", "", data.taxAmount.toFixed(2)].join("\t"),
+      ["Grand Total", "", "", "", data.totalAmount.toFixed(2)].join("\t")
+    ].join("\n");
+
+    try {
+      await navigator.clipboard.writeText(tsvContent);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
   };
 
   return (
@@ -82,9 +113,16 @@ const DataSheet: React.FC<DataSheetProps> = ({ data }) => {
                 <Download className="w-4 h-4" />
                 <span>Export CSV</span>
             </button>
-            <button className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm transition-colors shadow-sm">
-                <Save className="w-4 h-4" />
-                <span>Save to Sheets</span>
+            <button 
+                onClick={copyToClipboard}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm transition-all shadow-sm ${
+                    copied 
+                    ? "bg-emerald-600 text-white hover:bg-emerald-700" 
+                    : "bg-blue-600 text-white hover:bg-blue-700"
+                }`}
+            >
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                <span>{copied ? "Copied!" : "Copy for Sheets"}</span>
             </button>
         </div>
       </div>
