@@ -63,9 +63,11 @@ const receiptSchema: Schema = {
 };
 
 export const extractReceiptData = async (base64Image: string, mimeType: string): Promise<ReceiptData> => {
+  // The API key is injected at build time via vite.config.ts
   const apiKey = process.env.API_KEY;
+  
   if (!apiKey) {
-    throw new Error("API Key is missing. Please check your environment configuration.");
+    throw new Error("API Key is missing. Please add 'API_KEY' to your Vercel Environment Variables.");
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -89,7 +91,7 @@ export const extractReceiptData = async (base64Image: string, mimeType: string):
       config: {
         responseMimeType: "application/json",
         responseSchema: receiptSchema,
-        temperature: 0.1, // Low temperature for factual extraction
+        temperature: 0.1,
       },
     });
 
